@@ -1,6 +1,7 @@
 package Service;
 
 import Model.Account;
+// import io.javalin.validation.ValidationException;
 import DAO.AccountDAO;
 
 public class AccountService {
@@ -15,10 +16,24 @@ public class AccountService {
     // Register Account Service
     public Account registerAccount(Account account) {
         if (accountDAO.usernameExist(account.getUsername())) {
-            System.out.println("Username already exists: " + account.getUsername());
-            return null;
+            throw new IllegalArgumentException("Username already exist");
         }
-        return accountDAO.insertAccount(account);
+        if (account.getUsername() == null || account.getUsername().isBlank()) {
+            throw new IllegalArgumentException();
+        }
+        if (account.getPassword() == null || account.getPassword().length() < 4) {
+            throw new IllegalArgumentException("Password must be at least 4 characters");
+        }
+        return accountDAO.registerAccount(account);
     }
+
+        // Login Account Service
+        public Account loginAccount(Account account) {
+            Account retrievedAccount = accountDAO.loginAccount(account);
+            if (retrievedAccount == null) {
+                throw new IllegalArgumentException("Incorrect username or password");
+            }
+            return retrievedAccount;
+        }
     
 }

@@ -5,10 +5,12 @@ import Model.Message;
 import Service.AccountService;
 import Service.MessageService;
 import com.fasterxml.jackson.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import io.javalin.validation.ValidationException;
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller. The endpoints you will need can be
@@ -52,15 +54,55 @@ public class SocialMediaController {
         context.json("sample text");
     }
     private void postRegisterHandler(Context context) {
-        // validate the input
-        ObjectMapper mapper = new ObjectMapper();
-        context.json("sample text");
+        try {
+            // Parse the request into account object
+            ObjectMapper mapper = new ObjectMapper();
+            Account account = mapper.readValue(context.body(), Account.class);
+
+            // Call the service validations
+            Account registerAccount = accountService.registerAccount(account);
+
+            if (registerAccount != null) {
+                context.json(registerAccount).status(200);
+            }
+        } catch (IllegalArgumentException e) {
+            context.status(400);
+        } catch (JsonProcessingException  e) {
+            // context.status(400).result("Invalid JSON format: " + e.getMessage());
+            context.status(400);
+        }
     }
+
     private void postLoginHandler(Context context) {
-        context.json("sample text");
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Account account = mapper.readValue(context.body(), Account.class);
+
+            Account loginAccount = accountService.loginAccount(account);
+
+            if (loginAccount != null) {
+                context.json(loginAccount).status(200);
+            }
+        } catch (IllegalArgumentException e) {
+            context.status(401);
+
+        } catch (JsonProcessingException e) {
+            context.status(400);
+        }
     }
     private void postMessagesHandler(Context context) {
-        context.json("sample text");
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Message message = mapper.readValue(context.body(), Message.class);
+
+            Message postMessage = messageService.postMessages(message);
+            
+            if (postMessage != null) {
+                context.json(postMessage).status(200);
+            }
+        } catch (JsonProcessingException e) {
+            context.status(400);
+        }
     }
     private void getAllMessagesHandler(Context context) {
         context.json("sample text");

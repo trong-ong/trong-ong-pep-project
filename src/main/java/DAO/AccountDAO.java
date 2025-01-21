@@ -44,7 +44,7 @@ public class AccountDAO {
     }
 
     // POST /register
-    public Account insertAccount(Account account) {
+    public Account registerAccount(Account account) {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -92,6 +92,57 @@ public class AccountDAO {
         }
         return null;
     }
+
     // POST /login 
+    public Account loginAccount(Account account) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        try {
+            // Establish connection
+            connection = ConnectionUtil.getConnection();
+
+            // SQL Statement
+            String sql = "SELECT account_id, username, password FROM Account WHERE username = ? AND password = ?";
+
+            // Prepare Statement
+            preparedStatement = connection.prepareStatement(sql);
+
+            // Set Paramenters
+            preparedStatement.setString(1, account.getUsername());
+            preparedStatement.setString(2, account.getPassword());
+
+            // Result Set
+            resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                // Retrieve fields
+                int accountId = resultSet.getInt("account_id");
+                String username = resultSet.getString("username");
+                String password = resultSet.getString("password");
+
+                // Return object
+                return new Account(accountId, username, password);
+            }
+
+
+        } catch(SQLException e) {
+            System.out.println("Error retrieving: " + e.getMessage());
+        } finally {
+            try {
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch(SQLException e) {
+                System.out.println("Error closing resources: " + e.getMessage());
+            }
+        }
+        return null;
+    }
     
 }
