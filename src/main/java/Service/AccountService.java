@@ -1,7 +1,7 @@
 package Service;
 
 import Model.Account;
-// import io.javalin.validation.ValidationException;
+import io.javalin.validation.ValidationException;
 import DAO.AccountDAO;
 
 public class AccountService {

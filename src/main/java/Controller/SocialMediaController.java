@@ -103,6 +103,9 @@ public class SocialMediaController {
         } catch (JsonProcessingException e) {
             context.status(400);
         }
+        catch (IllegalArgumentException e) {
+            context.status(400);
+        }
     }
     private void getAllMessagesHandler(Context context) {
         context.json("sample text");
