@@ -1,16 +1,14 @@
 package Controller;
-
+import java.util.*;
 import Model.Account;
 import Model.Message;
 import Service.AccountService;
 import Service.MessageService;
-import com.fasterxml.jackson.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.javalin.Javalin;
 import io.javalin.http.Context;
-import io.javalin.validation.ValidationException;
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller. The endpoints you will need can be
@@ -68,7 +66,6 @@ public class SocialMediaController {
         } catch (IllegalArgumentException e) {
             context.status(400);
         } catch (JsonProcessingException  e) {
-            // context.status(400).result("Invalid JSON format: " + e.getMessage());
             context.status(400);
         }
     }
@@ -77,12 +74,10 @@ public class SocialMediaController {
         try {
             ObjectMapper mapper = new ObjectMapper();
             Account account = mapper.readValue(context.body(), Account.class);
-
             Account loginAccount = accountService.loginAccount(account);
+            
+            context.json(loginAccount).status(200);
 
-            if (loginAccount != null) {
-                context.json(loginAccount).status(200);
-            }
         } catch (IllegalArgumentException e) {
             context.status(401);
 
@@ -94,34 +89,57 @@ public class SocialMediaController {
         try {
             ObjectMapper mapper = new ObjectMapper();
             Message message = mapper.readValue(context.body(), Message.class);
-
             Message postMessage = messageService.postMessages(message);
-            
-            if (postMessage != null) {
-                context.json(postMessage).status(200);
-            }
-        } catch (JsonProcessingException e) {
+
+            context.json(postMessage).status(200);
+
+        } catch (IllegalArgumentException e) {
             context.status(400);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (JsonProcessingException e) {
             context.status(400);
         }
     }
     private void getAllMessagesHandler(Context context) {
-        context.json("sample text");
+        List<Message> message = messageService.getAllMessages();
+        context.json(message).status(200);
     }
     private void getMessagesByIdHandler(Context context) {
-        context.json("sample text");
+        try {
+            int messageId = Integer.parseInt(context.pathParam("message_id"));
+            context.json(messageService.getMessagesById(messageId)).status(200);
+
+        } catch (IllegalArgumentException e) {
+            context.json("").status(200);
+        }
     }
     private void deleteMessagesByIdHandler(Context context) {
-        context.json("sample text");
+        try {
+            int messageId = Integer.parseInt(context.pathParam("message_id"));
+            Message message = messageService.deleteMessagesById(messageId);
+            context.json(message).status(200);
+
+        } catch (IllegalArgumentException e) {
+            context.json("").status(200);
+        }
     }
     private void patchMessagesByIdHandler(Context context) {
-        context.json("sample text");
+        try {
+            int messageId = Integer.parseInt(context.pathParam("message_id"));
+            ObjectMapper mapper = new ObjectMapper();
+            Message message = mapper.readValue(context.body(), Message.class);
+    
+            Message patchMessage = messageService.patchMessagesById(messageId, message.getMessage_text());
+            context.json(patchMessage).status(200);
+
+        } catch (IllegalArgumentException e) {
+            context.json("").status(400);
+        } catch (JsonProcessingException e) {
+            context.status(400);
+        }
     }
     private void getAccountMessagesByIdHandler(Context context) {
-        context.json("sample text");
+        int accountId = Integer.parseInt(context.pathParam("account_id"));
+        List<Message> messages = messageService.getAccountMessagesById(accountId);
+        context.json(messages).status(200);
     }
-
-
 }
